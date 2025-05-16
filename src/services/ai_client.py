@@ -1,6 +1,7 @@
 from openai import OpenAI
 import os
 from dotenv import load_dotenv
+from classes import *
 
 load_dotenv()
 
@@ -34,3 +35,23 @@ def extract_entities(messages: list, model: str = "gpt-4") -> dict:
     except Exception as e:
         print("❌ Error al extraer entidades:", e)
         return {}
+
+
+def extract_entities_pydantic(messages: list, model: str = "gpt-4") -> Ejercicio | None:
+    """
+    Envía mensajes a la API y devuelve la respuesta directamente como instancia de MyEntityModel.
+    """
+    try:
+        response = client.chat.completions.create(
+            model=model,
+            messages=messages,
+            temperature=0.6,
+            response_format="json",  # 🔥 Fuerza a que devuelva JSON válido
+        )
+        json_response = response.choices[0].message.content
+
+        return Ejercicio.model_validate_json(json_response)
+
+    except Exception as e:
+        print("❌ Error al parsear la respuesta:", e)
+        return None
